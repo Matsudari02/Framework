@@ -9,4 +9,8 @@ router.post('/login', authController.login);
 router.get('/profile', authMiddleware, authController.getProfile);
 router.put('/profile/avatar', authMiddleware, upload.single('avatar'), authController.updateAvatar);
 
+console.log('🔐 Rotas de autenticação registradas:');
+console.log('  PUT /profile/avatar');
+
 module.exports = router;
+
