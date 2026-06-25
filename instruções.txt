@@ -1,0 +1,139 @@
+INSTRUÇÕES PARA INSTALAÇÃO E EXECUÇÃO DO PROJETO CRUNTROLL (RA3)
+
+PRÉ-REQUISITOS
+- Node.js (versão 16 ou superior) – https://nodejs.org/
+- npm (incluído com o Node.js)
+- Um navegador web moderno (Chrome, Firefox, Edge)
+
+ESTRUTURA DO PROJETO
+O projeto é dividido em duas partes:
+- Frontend (React) – na raiz do projeto (src/, public/, etc.)
+- Backend (Node.js + Express + SQLite) – dentro da pasta backend/
+
+DEPENDÊNCIAS
+Frontend (raiz):
+  - react, react-dom, react-router-dom, react-scripts, axios, react-toastify
+Backend (pasta backend/):
+  - express, cors, dotenv, jsonwebtoken, bcrypt, sqlite3, multer, uuid
+
+PASSO A PASSO PARA INSTALAR E EXECUTAR EM OUTRA MÁQUINA
+
+1. OBTER O CÓDIGO FONTE
+   Opção A (Git):
+     git clone <URL_DO_REPOSITORIO>
+     cd cruntroll-app
+   Opção B (pasta zipada):
+     Extraia o conteúdo e abra o terminal na pasta extraída.
+
+2. CONFIGURAR O BACKEND
+   a) Entre na pasta do backend:
+        cd backend
+   b) Instale as dependências do backend:
+        npm install
+   c) Crie o arquivo .env (variáveis de ambiente) dentro da pasta backend:
+        Conteúdo do .env:
+          PORT=5000
+          JWT_SECRET=uma_chave_muito_secreta_e_aleatoria
+     (Você pode gerar uma chave aleatória em https://randomkeygen.com/ ou usar qualquer string longa)
+   d) (Opcional) O banco de dados SQLite (cruntroll.db) será criado automaticamente na primeira execução.
+
+3. CONFIGURAR O FRONTEND
+   a) Volte para a raiz do projeto (se estiver dentro de backend):
+        cd ..
+   b) Instale as dependências do frontend:
+        npm install
+
+4. EXECUTAR O PROJETO (em dois terminais separados)
+   Terminal 1 – Backend (servidor API):
+        cd backend
+        npm start
+     O backend estará rodando em http://localhost:5000
+   Terminal 2 – Frontend (interface React):
+        (na raiz do projeto)
+        npm start
+     O frontend estará rodando em http://localhost:3000
+
+5. ACESSAR A APLICAÇÃO
+   Abra o navegador e acesse http://localhost:3000
+   Para testar a API diretamente, acesse http://localhost:5000/api/health
+
+COMANDOS ÚTEIS
+  Frontend (raiz):
+    npm start          – inicia o servidor de desenvolvimento React (porta 3000)
+    npm run build      – gera a versão de produção (pasta build/)
+  Backend (pasta backend/):
+    npm start          – inicia o servidor Node.js (porta 5000)
+    npm run dev        – inicia com nodemon (reinicia automaticamente ao alterar código)
+
+SOBRE O BANCO DE DADOS (SQLite)
+- O banco é um arquivo chamado cruntroll.db que será criado automaticamente na pasta backend/.
+- Não é necessário instalar ou configurar nenhum servidor de banco de dados.
+- Para visualizar os dados, use um programa como DB Browser for SQLite (gratuito).
+- As tabelas criadas são:
+    users (id, name, email, password, avatar, created_at)
+    favorites (id, user_id, anime_id, anime_data, created_at)
+- A senha dos usuários é armazenada com hash (bcrypt) – nunca em texto puro.
+
+RESOLUÇÃO DE PROBLEMAS COMUNS
+
+1. Erro "Cannot find module" no backend:
+   - Certifique-se de que você executou `npm install` dentro da pasta backend/.
+   - Verifique se o arquivo .env existe e contém as variáveis PORT e JWT_SECRET.
+
+2. Erro "Missing script: start" no frontend:
+   - Certifique-se de que está na raiz do projeto (onde está o package.json do frontend).
+   - Verifique se o script "start" está definido no package.json (deve ter "start": "react-scripts start").
+
+3. Erro de conexão com o banco:
+   - Verifique se a pasta backend/ tem permissão de escrita (para criar o arquivo .db).
+   - Reinicie o backend após garantir que a estrutura das tabelas foi criada.
+
+4. CORS ou erro de rede no frontend:
+   - Confirme que o backend está rodando na porta 5000.
+   - No arquivo src/api/client.js, verifique se o baseURL está http://localhost:5000/api.
+
+5. Login não funciona:
+   - Verifique se o backend está rodando.
+   - Confirme se o JWT_SECRET está definido no .env.
+   - No console do navegador (F12), veja se há erros de rede ou resposta 401.
+
+6. Upload de avatar não funciona:
+   - Verifique se a pasta backend/uploads/avatars/ existe (criada automaticamente).
+   - O arquivo deve ter menos de 5MB e ser JPG, PNG, GIF ou WebP.
+
+7. Para limpar completamente e reinstalar:
+   - Delete as pastas node_modules/ e package-lock.json (tanto na raiz quanto no backend).
+   - Delete o arquivo cruntroll.db (se quiser recriar o banco).
+   - Execute `npm install` na raiz e em backend/ novamente.
+
+ESTRUTURA DE PASTAS ESPERADA APÓS A INSTALAÇÃO
+cruntroll-app/
+├── backend/
+│   ├── config/
+│   ├── controllers/
+│   ├── middlewares/
+│   ├── models/
+│   ├── routes/
+│   ├── uploads/
+│   │   └── avatars/
+│   ├── .env
+│   ├── package.json
+│   ├── server.js
+│   └── cruntroll.db (criado automaticamente)
+├── public/
+│   └── index.html
+├── src/
+│   ├── api/
+│   ├── components/
+│   ├── contexts/
+│   ├── pages/
+│   ├── services/
+│   ├── styles/
+│   ├── App.js
+│   ├── index.js
+│   └── routes.js
+├── package.json
+├── package-lock.json
+└── INSTRUÇÕES.txt
+
+Para qualquer dúvida, entre em contato com o responsável pelo projeto.
