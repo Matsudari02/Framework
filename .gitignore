@@ -1,0 +1,32 @@
+# Dependências
+node_modules/
+package-lock.json
+yarn.lock
+
+# Variáveis de ambiente
+.env
+.env.local
+.env.production
+
+# Uploads (imagens enviadas)
+uploads/
+
+# Arquivos de build
+build/
+dist/
+out/
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Arquivos de banco (se for SQLite, pode ignorar)
+*.db
+*.db-journal
