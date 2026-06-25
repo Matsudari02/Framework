@@ -9,6 +9,8 @@ const AnimeCard = ({ id, title, image, episodes, rating }) => {
     e.target.src = "https://via.placeholder.com/300x450?text=Imagem+Indisponível";
   };
 
+  
+
   return (
     <div className="anime-card">
       <Link to={`/anime/${id}`}>

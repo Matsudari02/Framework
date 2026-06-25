@@ -12,26 +12,37 @@ const Auth = () => {
   const { login, register } = useCruntRoll();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  // 🔥 Validação de senha forte
+  const validatePassword = (pwd) => {
+    if (pwd.length < 8) return 'A senha deve ter pelo menos 8 caracteres.';
+    if (!/[A-Z]/.test(pwd)) return 'A senha deve conter uma letra maiúscula.';
+    if (!/[a-z]/.test(pwd)) return 'A senha deve conter uma letra minúscula.';
+    if (!/[0-9]/.test(pwd)) return 'A senha deve conter um número.';
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(pwd)) return 'A senha deve conter um caractere especial.';
+    return null;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
     if (isLogin) {
-      if (login(email, password)) {
-        navigate('/');
-      } else {
-        setError('Email ou senha inválidos (mínimo 4 caracteres)');
-      }
+      const success = await login(email, password);
+      if (success) navigate('/');
+      else setError('Email ou senha inválidos.');
     } else {
-      if (password !== confirmPassword) {
-        setError('As senhas não coincidem');
+      const pwdError = validatePassword(password);
+      if (pwdError) {
+        setError(pwdError);
         return;
       }
-      if (register(name, email, password)) {
-        navigate('/');
-      } else {
-        setError('Preencha todos os campos corretamente');
+      if (password !== confirmPassword) {
+        setError('As senhas não coincidem.');
+        return;
       }
+      const success = await register(name, email, password);
+      if (success) navigate('/');
+      else setError('Erro ao cadastrar. Tente outro email.');
     }
   };
 
@@ -58,7 +69,7 @@ const Auth = () => {
           />
           <input
             type="password"
-            placeholder="Senha (mín. 4 caracteres)"
+            placeholder="Senha (mín. 8 caracteres, 1 maiúscula, 1 número, 1 especial)"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required

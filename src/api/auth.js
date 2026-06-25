@@ -15,9 +15,12 @@ export const getProfile = async () => {
   return response.data;
 };
 
-export const uploadAvatar = async (formData) => {
-  const response = await api.post('/auth/upload-avatar', formData, {
+export const uploadAvatar = (formData) => {
+  const token = localStorage.getItem('cruntroll_token');
+  console.log('Token enviado:', token); // 🔥 verifica se o token existe
+  return api.put('/auth/profile/avatar', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   });
-  return response.data;
 };
+
+

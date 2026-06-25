@@ -8,6 +8,12 @@ const Header = () => {
   const navigate = useNavigate();
   const { isLoggedIn, user, logout } = useCruntRoll();
 
+  const avatarUrl = user?.avatar 
+  ? (user.avatar.startsWith('http') ? user.avatar : `http://localhost:5000${user.avatar}`)
+  : `https://ui-avatars.com/api/?name=${user?.name || 'User'}&background=f47521&color=fff&size=32`;
+
+<img src={avatarUrl} alt="Avatar" className="header-avatar" />
+
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchTerm.trim()) {
@@ -22,24 +28,26 @@ const Header = () => {
         <Link to="/" className="logo">
           <span style={{ color: '#f47521' }}>Crunt</span>Roll
         </Link>
+
         <nav className="nav">
-          <NavLink to="/" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+          <NavLink to="/" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
             Início
           </NavLink>
-          <NavLink to="/search" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
+          <NavLink to="/search" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
             Explorar
           </NavLink>
           {isLoggedIn && (
-          <>
-        <NavLink to="/favorites" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-           Favoritos
-        </NavLink>
-        <NavLink to="/profile" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-          Perfil
-        </NavLink>
-        </>
-        )}
+            <NavLink to="/favorites" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
+              Favoritos
+            </NavLink>
+          )}
+          {isLoggedIn && (
+            <NavLink to="/profile" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
+              Perfil
+            </NavLink>
+          )}
         </nav>
+
         <div className="header-actions">
           <form onSubmit={handleSearchSubmit} className="header-search-form">
             <input
@@ -51,11 +59,19 @@ const Header = () => {
             />
             <button type="submit" className="search-btn">🔍</button>
           </form>
+
           <div className="auth-buttons">
             {isLoggedIn ? (
               <>
-                <span className="user-name">Olá, {user?.name}</span>
-                <button onClick={logout} className="btn btn-small">Sair</button>
+                <div className="user-info">
+                  <img
+                    src={user?.avatar ? `http://localhost:5000${user.avatar}` : `https://ui-avatars.com/api/?name=${user?.name || 'User'}&background=f47521&color=fff&size=32`}
+                    alt="Avatar"
+                    className="header-avatar"
+                  />
+                  <span className="user-name">Olá, {user?.name}</span>
+                  <button onClick={logout} className="btn btn-small">Sair</button>
+                </div>
               </>
             ) : (
               <Link to="/auth" className="btn btn-small">Entrar</Link>

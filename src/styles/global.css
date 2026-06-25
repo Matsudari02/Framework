@@ -99,7 +99,18 @@ a {
 .loading {
   text-align: center;
   padding: 3rem;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
+  color: #aaa;
+}
+.loading::after {
+  content: '...';
+  animation: dots 1.5s steps(4) infinite;
+}
+@keyframes dots {
+  0% { content: ''; }
+  25% { content: '.'; }
+  50% { content: '..'; }
+  75% { content: '...'; }
 }
 
 .auth-container {
@@ -280,4 +291,47 @@ a {
 .profile-info p {
   padding: 0.5rem 0;
   border-bottom: 1px solid #2a2a2e;
+}
+
+/* Grid de animes - já deve estar com auto-fill, ajuste o minmax */
+.anime-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Sidebar da busca */
+@media (max-width: 768px) {
+  .search-container {
+    flex-direction: column;
+  }
+  .search-sidebar {
+    width: 100%;
+    position: static;
+    margin-bottom: 1rem;
+  }
+  .genres-list {
+    max-height: 200px; /* menos altura em mobile */
+  }
+}
+
+@media (max-width: 480px) {
+  .anime-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  .hero h1 {
+    font-size: 2rem;
+  }
+  .hero p {
+    font-size: 1rem;
+  }
+  .details-banner {
+    flex-direction: column;
+    align-items: center;
+  }
+  .details-banner img {
+    width: 100%;
+    max-width: 280px;
+  }
 }

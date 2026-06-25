@@ -4,7 +4,8 @@ import AnimeCard from '../components/AnimeCard';
 import { Link } from 'react-router-dom';
 
 const Favorites = () => {
-  const { favorites, isLoggedIn } = useCruntRoll();
+const { favorites, isLoggedIn } = useCruntRoll();
+
 
   // Debug: veja no console o que está sendo recebido
   console.log('Favoritos no estado:', favorites);

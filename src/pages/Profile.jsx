@@ -1,52 +1,87 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useCruntRoll } from '../contexts/CruntRollContext';
-import { showSuccess, showError } from '../components/ToastWrapper';
+import { toast } from 'react-toastify';
 
 const Profile = () => {
   const { user, uploadAvatar } = useCruntRoll();
+  const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef();
+
+  // 🔥 Atualiza o preview quando o avatar do usuário mudar
+  useEffect(() => {
+    if (user?.avatar) {
+      // Se for relativo, adiciona a base URL
+      const avatarUrl = user.avatar.startsWith('http') 
+        ? user.avatar 
+        : `http://localhost:5000${user.avatar}`;
+      setPreview(avatarUrl);
+    } else {
+      // Se não tiver avatar, usa o placeholder
+      setPreview(null);
+    }
+  }, [user?.avatar]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validar tamanho (5MB)
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      toast.error('Formato não suportado. Use JPG, PNG, GIF ou WebP.');
+      e.target.value = '';
+      return;
+    }
+
     if (file.size > 5 * 1024 * 1024) {
-      showError('A imagem deve ter no máximo 5MB');
+      toast.error('Arquivo muito grande. Máximo 5MB.');
+      e.target.value = '';
       return;
     }
 
-    // Validar tipo
-    if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
-      showError('Formato não permitido. Use JPG, PNG ou GIF.');
-      return;
-    }
-
-    // Criar preview
+    setSelectedFile(file);
     const reader = new FileReader();
-    reader.onloadend = () => setPreview(reader.result);
+    reader.onload = (e) => setPreview(e.target.result);
     reader.readAsDataURL(file);
-
-    // Upload automático
-    handleUpload(file);
   };
 
-  const handleUpload = async (file) => {
+  const handleSave = async () => {
+    if (!selectedFile) {
+      toast.warning('Selecione uma imagem primeiro.');
+      return;
+    }
     setUploading(true);
     try {
-      await uploadAvatar(file);
-      showSuccess('Avatar atualizado com sucesso!');
-      setPreview(null);
+      const success = await uploadAvatar(selectedFile);
+      if (success) {
+        toast.success('Avatar atualizado com sucesso!');
+        setSelectedFile(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        // O useEffect vai atualizar o preview com o novo avatar
+      } else {
+        toast.error('Erro ao atualizar avatar.');
+      }
     } catch (error) {
-      showError(error.message || 'Erro ao enviar avatar');
+      toast.error(error.message || 'Erro ao enviar imagem.');
     } finally {
       setUploading(false);
     }
   };
 
-  if (!user) return <div className="loading">Carregando...</div>;
+  const handleCancel = () => {
+    setSelectedFile(null);
+    // Volta para o avatar salvo (ou placeholder)
+    if (user?.avatar) {
+      const avatarUrl = user.avatar.startsWith('http') 
+        ? user.avatar 
+        : `http://localhost:5000${user.avatar}`;
+      setPreview(avatarUrl);
+    } else {
+      setPreview(null);
+    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   return (
     <div className="profile-container">
@@ -54,35 +89,48 @@ const Profile = () => {
       <div className="profile-card">
         <div className="avatar-section">
           <img
-            src={user.avatar ? `http://localhost:5000${user.avatar}` : '/default-avatar.png'}
+            src={preview || `https://ui-avatars.com/api/?name=${user?.name || 'User'}&background=f47521&color=fff&size=150`}
             alt="Avatar"
             className="profile-avatar"
+            style={{ width: '150px', height: '150px', borderRadius: '50%', objectFit: 'cover' }}
           />
-          <input
-            type="file"
-            accept="image/jpeg,image/png,image/gif"
-            onChange={handleFileChange}
-            ref={fileInputRef}
-            style={{ display: 'none' }}
-          />
-          <button
-            className="btn"
-            onClick={() => fileInputRef.current.click()}
-            disabled={uploading}
-          >
-            {uploading ? 'Enviando...' : 'Alterar Avatar'}
-          </button>
-          {preview && (
-            <div className="preview-container">
-              <p>Pré-visualização:</p>
-              <img src={preview} alt="Preview" className="preview-avatar" />
-            </div>
-          )}
+          <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <button
+              className="btn btn-secondary"
+              onClick={() => fileInputRef.current.click()}
+              disabled={uploading}
+            >
+              Selecionar imagem
+            </button>
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              style={{ display: 'none' }}
+            />
+            <button
+              className="btn"
+              onClick={handleSave}
+              disabled={!selectedFile || uploading}
+            >
+              {uploading ? 'Enviando...' : 'Salvar'}
+            </button>
+            {selectedFile && (
+              <button
+                className="btn btn-danger"
+                onClick={handleCancel}
+                disabled={uploading}
+              >
+                Cancelar
+              </button>
+            )}
+          </div>
         </div>
         <div className="profile-info">
-          <p><strong>Nome:</strong> {user.name}</p>
-          <p><strong>E-mail:</strong> {user.email}</p>
-          <p><strong>Membro desde:</strong> {new Date(user.created_at).toLocaleDateString()}</p>
+          <p><strong>Nome:</strong> {user?.name}</p>
+          <p><strong>Email:</strong> {user?.email}</p>
+          <p><strong>Membro desde:</strong> {user?.created_at ? new Date(user.created_at).toLocaleDateString() : '—'}</p>
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import { login as apiLogin, register as apiRegister, getProfile, uploadAvatar as apiUploadAvatar } from '../api/auth';
 import { getFavorites, addFavorite as apiAddFavorite, removeFavorite as apiRemoveFavorite } from '../api/favorites';
+import { toast } from 'react-toastify';
 
 const CruntRollContext = createContext();
 
@@ -12,25 +13,28 @@ export const CruntRollProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [favorites, setFavorites] = useState([]);
 
-  // Carregar favoritos do usuário logado
-  const loadFavorites = async () => {
+  // 🔥 useCallback para evitar recriação de funções
+  const loadFavorites = useCallback(async () => {
     try {
       const data = await getFavorites();
-      setFavorites(data); // agora é um array
+      setFavorites(data);
     } catch (error) {
       console.error('Erro ao carregar favoritos:', error);
       setFavorites([]);
     }
-  };
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('cruntroll_token');
     if (token) {
       getProfile()
-        .then(async (userData) => {
-          setUser(userData);
-          setIsLoggedIn(true);
-          await loadFavorites();
+        .then((response) => {
+          const userData = response.user || response.data?.user;
+          if (userData) {
+            setUser(userData);
+            setIsLoggedIn(true);
+            loadFavorites();
+          }
         })
         .catch(() => {
           localStorage.removeItem('cruntroll_token');
@@ -41,82 +45,99 @@ export const CruntRollProvider = ({ children }) => {
     } else {
       setLoading(false);
     }
-  }, []);
+  }, [loadFavorites]); // dependência correta
 
-  const login = async (email, password) => {
+  const login = useCallback(async (email, password) => {
     try {
       const data = await apiLogin(email, password);
       localStorage.setItem('cruntroll_token', data.token);
       setUser(data.user);
       setIsLoggedIn(true);
       await loadFavorites();
+      toast.success('Login realizado com sucesso!');
       return true;
     } catch (error) {
-      console.error('Erro no login:', error.response?.data || error.message);
+      console.error('Erro no login:', error);
+      toast.error(error.response?.data?.error || 'Erro ao fazer login');
       return false;
     }
-  };
+  }, [loadFavorites]);
 
-  const register = async (name, email, password) => {
+  const register = useCallback(async (name, email, password) => {
     try {
       const data = await apiRegister(name, email, password);
       localStorage.setItem('cruntroll_token', data.token);
       setUser(data.user);
       setIsLoggedIn(true);
       await loadFavorites();
+      toast.success('Cadastro realizado com sucesso!');
       return true;
     } catch (error) {
-      console.error('Erro no registro:', error.response?.data || error.message);
+      console.error('Erro no registro:', error);
+      toast.error(error.response?.data?.error || 'Erro ao registrar');
       return false;
     }
-  };
+  }, [loadFavorites]);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('cruntroll_token');
     setUser(null);
     setIsLoggedIn(false);
     setFavorites([]);
-  };
+    toast.info('Você saiu da sua conta.');
+  }, []);
 
-  const addFavorite = async (anime) => {
+  const addFavorite = useCallback(async (anime) => {
     try {
       await apiAddFavorite(anime.id, anime);
-      await loadFavorites(); // recarrega lista completa
+      await loadFavorites();
+      toast.success('Anime adicionado aos favoritos!');
       return true;
     } catch (error) {
       console.error('Erro ao adicionar favorito:', error);
+      toast.error(error.response?.data?.error || 'Erro ao adicionar');
       return false;
     }
-  };
+  }, [loadFavorites]);
 
-  const removeFavorite = async (animeId) => {
+  const removeFavorite = useCallback(async (animeId) => {
     try {
       await apiRemoveFavorite(animeId);
-      await loadFavorites(); // recarrega lista completa
+      await loadFavorites();
+      toast.success('Anime removido dos favoritos!');
       return true;
     } catch (error) {
       console.error('Erro ao remover favorito:', error);
+      toast.error(error.response?.data?.error || 'Erro ao remover');
       return false;
     }
-  };
+  }, [loadFavorites]);
 
-  // 🔥 isFavorite agora é síncrona e usa o estado local
-  const isFavorite = (animeId) => {
+  const isFavorite = useCallback((animeId) => {
     return favorites.some(fav => fav.anime_id === animeId || fav.id === animeId);
-  };
+  }, [favorites]);
 
-  const uploadAvatar = async (file) => {
-    try {
-      const formData = new FormData();
-      formData.append('avatar', file);
-      const result = await apiUploadAvatar(formData);
-      setUser(prev => ({ ...prev, avatar: result.avatar }));
+  const uploadAvatar = useCallback(async (file) => {
+  try {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    const result = await apiUploadAvatar(formData);
+    // Verifica onde está o user na resposta
+    const updatedUser = result.data?.user || result.user;
+    if (updatedUser) {
+      // Atualiza o estado com o novo user (que contém avatar)
+      setUser(prev => ({ ...prev, ...updatedUser }));
+      toast.success('Avatar atualizado!');
       return true;
-    } catch (error) {
-      console.error('Erro ao enviar avatar:', error);
-      return false;
     }
-  };
+    toast.warning('Avatar enviado, mas não foi possível atualizar os dados.');
+    return false;
+  } catch (error) {
+    console.error('Erro no upload:', error);
+    toast.error(error.response?.data?.error || 'Erro ao enviar avatar');
+    return false;
+  }
+}, []);
 
   return (
     <CruntRollContext.Provider value={{
