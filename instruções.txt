@@ -74,6 +74,13 @@ SOBRE O BANCO DE DADOS (SQLite)
     favorites (id, user_id, anime_id, anime_data, created_at)
 - A senha dos usuários é armazenada com hash (bcrypt) – nunca em texto puro.
 
+REGRAS DE VALIDAÇÃO DE SENHA (frontend e backend)
+- Mínimo de 8 caracteres.
+- Pelo menos 1 letra maiúscula.
+- Pelo menos 1 letra minúscula.
+- Pelo menos 1 número.
+- Pelo menos 1 caractere especial (!@#$%^&*(),.?":{}|<>).
+
 RESOLUÇÃO DE PROBLEMAS COMUNS
 
 1. Erro "Cannot find module" no backend:
@@ -132,8 +139,15 @@ cruntroll-app/
 │   ├── App.js
 │   ├── index.js
 │   └── routes.js
+├── .env.example (opcional, para referência)
+├── .gitignore
 ├── package.json
 ├── package-lock.json
 └── INSTRUÇÕES.txt
+
+OBSERVAÇÃO SOBRE SEGURANÇA
+- O arquivo .env contém a chave JWT_SECRET – NUNCA compartilhe este arquivo publicamente.
+- O .gitignore já está configurado para ignorar .env, node_modules/ e uploads/.
+- Ao clonar o projeto, crie o .env manualmente com suas próprias chaves.
 
 Para qualquer dúvida, entre em contato com o responsável pelo projeto.
